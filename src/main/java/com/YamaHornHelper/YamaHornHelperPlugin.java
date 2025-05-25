@@ -70,7 +70,6 @@ public class YamaHornHelperPlugin extends Plugin
 			{
 				yamaPlayers = client.getVarbitValue(VarbitID.YAMA_HORN_MAX_PLAYERS);
 				yamaRadius = client.getVarbitValue(VarbitID.YAMA_HORN_RADIUS);
-				//onItemContainerChanged(new ItemContainerChanged(InventoryID.WORN, client.getItemContainer(InventoryID.WORN)));
 			}
 			else
 			{

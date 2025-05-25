@@ -44,10 +44,9 @@ public class YamaHornOverlay extends OverlayPanel
 		
 		if (config.showHornSettings())
 		{
-			int playerCount = plugin.getPlayersWithinRange().size() - 1;
 			LineComponent radius = generateLineBoth("Max Radius", String.format("%s", plugin.yamaRadius), Color.WHITE);
 			panelComponent.getChildren().add(radius);
-			LineComponent player = generateLineBoth("Max Players", String.format("%s (%s)", plugin.yamaPlayers, playerCount), Color.WHITE);
+			LineComponent player = generateLineBoth("Max Players", String.format("%s (%s)", plugin.yamaPlayers, plugin.getPlayersWithinRange().size()), Color.WHITE);
 			panelComponent.getChildren().add(player);
 		}
 		
