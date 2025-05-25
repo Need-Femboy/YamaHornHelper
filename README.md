@@ -1,2 +1,1 @@
-# Example
-An example greeter plugin
+Plugin helps visualise who is close to you with your current Soulflame Horn settings
