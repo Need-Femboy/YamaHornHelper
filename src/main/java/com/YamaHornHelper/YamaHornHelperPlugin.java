@@ -6,10 +6,16 @@ import javax.inject.Inject;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.*;
+import net.runelite.api.ChatMessageType;
+import net.runelite.api.Client;
+import net.runelite.api.EquipmentInventorySlot;
+import net.runelite.api.GameState;
+import net.runelite.api.Item;
+import net.runelite.api.Player;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.gameval.ItemID;
@@ -20,7 +26,6 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,26 +58,19 @@ public class YamaHornHelperPlugin extends Plugin
 	
 	@Getter
 	public boolean isHidden;
-	
 	@Getter
-	public boolean useCache;
-	
 	private List<Player> listOfPlayers = new ArrayList<>();
 	
-	private List<Player> cachedList = new ArrayList<>();
- 
+	
 	@Override
-	protected void startUp() throws Exception
-	{
+	protected void startUp() throws Exception {
 		clientThread.invoke(() ->
 		{
-			if (client.getGameState() == GameState.LOGGED_IN)
-			{
+			if (client.getGameState() == GameState.LOGGED_IN) {
 				yamaPlayers = client.getVarbitValue(VarbitID.YAMA_HORN_MAX_PLAYERS);
 				yamaRadius = client.getVarbitValue(VarbitID.YAMA_HORN_RADIUS);
 			}
-			else
-			{
+			else {
 				yamaPlayers = yamaRadius = -1;
 				isHidden = true;
 			}
@@ -82,93 +80,72 @@ public class YamaHornHelperPlugin extends Plugin
 	}
 	
 	@Override
-	protected void shutDown() throws Exception
-	{
+	protected void shutDown() throws Exception {
 		yamaPlayers = yamaRadius = -1;
-		useCache = false;
 		listOfPlayers.clear();
-		cachedList.clear();
 		overlayManager.remove(yamaHornOverlay);
 		overlayManager.remove(yamaHornTileOverlay);
 	}
 	
 	
 	@Subscribe
-	public void onGameTick(GameTick event)
-	{
-		useCache = false;
+	public void onGameTick(GameTick event) {
 		listOfPlayers.clear();
 		
-		if (isHidden)
-		{
+		if (isHidden) {
 			return;
 		}
 		
-		listOfPlayers.addAll(client.getTopLevelWorldView().players().stream().collect(Collectors.toList()));
+		Player localPlayer = client.getLocalPlayer();
+		WorldPoint myLocation = localPlayer.getWorldLocation();
+		
+		listOfPlayers = client.getTopLevelWorldView().players()
+				.stream()
+				.filter(p -> p != localPlayer)
+				.filter(p -> myLocation.distanceTo2D(p.getWorldLocation()) <= yamaRadius)
+				.collect(Collectors.toList());
 	}
 	
 	@Subscribe
-	public void onVarbitChanged(VarbitChanged event)
-	{
-		if (event.getVarbitId() == VarbitID.YAMA_HORN_RADIUS)
-		{
+	public void onVarbitChanged(VarbitChanged event) {
+		if (event.getVarbitId() == VarbitID.YAMA_HORN_RADIUS) {
 			yamaRadius = event.getValue();
 		}
-		else if (event.getVarbitId() == VarbitID.YAMA_HORN_MAX_PLAYERS)
-		{
+		else if (event.getVarbitId() == VarbitID.YAMA_HORN_MAX_PLAYERS) {
 			yamaPlayers = event.getValue();
 		}
 	}
+	
 	@Subscribe
-	public void onItemContainerChanged(ItemContainerChanged event)
-	{
-		if (event.getContainerId() != InventoryID.WORN)
-		{
+	public void onItemContainerChanged(ItemContainerChanged event) {
+		if (event.getContainerId() != InventoryID.WORN) {
 			return;
 		}
 		Item weapon = event.getItemContainer().getItem(EquipmentInventorySlot.WEAPON.getSlotIdx());
 		isHidden = weapon == null || weapon.getId() != ItemID.SOULFLAME_HORN; //Hide interface when not equipping a horn
 	}
 	
-	public List<Player> getPlayersWithinRange()
-	{
-		if (useCache) //Stop recalculating entire list every time overlay renders it
-		{
-			return cachedList;
+	@Subscribe
+	public void onMenuOptionClicked(MenuOptionClicked event) {
+		/*
+		 * TODO: Config option to prevent the player from horning when there are too many people around.
+		 *  For example, horn set for 1 person but there's a second person around and you want to avoid potentially horning them by mistake
+		 */
+		
+		if (isHidden || !event.getMenuOption().startsWith("Use") || listOfPlayers.size() > 0) {
+			return;
 		}
 		
-		if (listOfPlayers.size() <= 1)
-		{
-			return new ArrayList<>();
+		if (event.getMenuOption().equals("Use <col=00ff00>Special Attack</col>") ||
+				event.getMenuTarget().equals("<col=ff9040>Special Attack</col>")) {
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
+					"<col=ef1020>You blow your horn into the wind. No-one nearby is able to listen.", null);
+			event.consume();
 		}
-		
-		List<Player> tempList = new ArrayList<>();
-		Player localPlayer = client.getLocalPlayer();
-		WorldPoint myLocation = localPlayer.getWorldLocation();
-		
-		for (Player p : listOfPlayers)
-		{
-			if (p == localPlayer)
-			{
-				continue;
-			}
-			
-			WorldPoint theirLocation = p.getWorldLocation();
-			if (myLocation.distanceTo2D(theirLocation) <= yamaRadius)
-			{
-				tempList.add(p);
-			}
-		}
-		
-		useCache = true;
-		cachedList = tempList;
-		
-		return cachedList;
 	}
 	
 	@Provides
-	YamaHornHelperConfig provideConfig(ConfigManager configManager)
-	{
+	YamaHornHelperConfig provideConfig(ConfigManager configManager) {
 		return configManager.getConfig(YamaHornHelperConfig.class);
 	}
 }

@@ -4,11 +4,13 @@ import net.runelite.api.Client;
 import net.runelite.api.Player;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
+
 import javax.inject.Inject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
+
 import net.runelite.client.ui.overlay.components.ComponentOrientation;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.util.Text;
@@ -20,8 +22,7 @@ public class YamaHornOverlay extends OverlayPanel
 	private final YamaHornHelperConfig config;
 	
 	@Inject
-	private YamaHornOverlay(Client client, YamaHornHelperPlugin plugin, YamaHornHelperConfig config)
-	{
+	private YamaHornOverlay(Client client, YamaHornHelperPlugin plugin, YamaHornHelperConfig config) {
 		this.client = client;
 		this.plugin = plugin;
 		this.config = config;
@@ -33,36 +34,29 @@ public class YamaHornOverlay extends OverlayPanel
 	}
 	
 	@Override
-	public Dimension render(Graphics2D graphics)
-	{
-		if (plugin.isHidden())
-		{
+	public Dimension render(Graphics2D graphics) {
+		if (plugin.isHidden()) {
 			return null;
 		}
 		
 		//panelComponent.getChildren().clear();
 		
-		if (config.showHornSettings())
-		{
+		if (config.showHornSettings()) {
 			LineComponent radius = generateLineBoth("Max Radius", String.format("%s", plugin.yamaRadius), Color.WHITE);
 			panelComponent.getChildren().add(radius);
-			LineComponent player = generateLineBoth("Max Players", String.format("%s (%s)", plugin.yamaPlayers, plugin.getPlayersWithinRange().size()), Color.WHITE);
+			LineComponent player = generateLineBoth("Max Players", String.format("%s (%s)", plugin.yamaPlayers, plugin.getListOfPlayers().size()), Color.WHITE);
 			panelComponent.getChildren().add(player);
 		}
 		
-		if (config.showPlayersInOverlay())
-		{
+		if (config.showPlayersInOverlay()) {
 			int playerCount = 0;
 			
-			for (Player player : plugin.getPlayersWithinRange())
-			{
-				if (playerCount + 1 > config.maxPlayerDisplay())
-				{
+			for (Player player : plugin.getListOfPlayers()) {
+				if (playerCount + 1 > config.maxPlayerDisplay()) {
 					break;
 				}
 				
-				if (player.getName() != null)
-				{ //Put check here to still enable tile overlay for players
+				if (player.getName() != null) { //Put check here to still enable tile overlay for players
 					LineComponent lineComponent = generateLine(Text.sanitize(player.getName()), Color.WHITE);
 					panelComponent.getChildren().add(lineComponent);
 					playerCount++;
@@ -73,8 +67,7 @@ public class YamaHornOverlay extends OverlayPanel
 		return super.render(graphics);
 	}
 	
-	private LineComponent generateLine(String str, Color color)
-	{
+	private LineComponent generateLine(String str, Color color) {
 		LineComponent lineComponent = LineComponent.builder()
 				.left(str)
 				.leftColor(color)
@@ -82,8 +75,7 @@ public class YamaHornOverlay extends OverlayPanel
 		return lineComponent;
 	}
 	
-	private LineComponent generateLineBoth(String strLeft, String strRight, Color color)
-	{
+	private LineComponent generateLineBoth(String strLeft, String strRight, Color color) {
 		LineComponent lineComponent = LineComponent.builder()
 				.left(strLeft)
 				.leftColor(color)
