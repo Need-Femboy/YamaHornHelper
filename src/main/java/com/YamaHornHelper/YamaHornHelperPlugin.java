@@ -57,7 +57,7 @@ public class YamaHornHelperPlugin extends Plugin
 	public int yamaPlayers, yamaRadius;
 	
 	@Getter
-	public boolean isHidden;
+	public boolean noHornEquipped;
 	@Getter
 	private List<Player> listOfPlayers = new ArrayList<>();
 	
@@ -72,7 +72,7 @@ public class YamaHornHelperPlugin extends Plugin
 			}
 			else {
 				yamaPlayers = yamaRadius = -1;
-				isHidden = true;
+				noHornEquipped = true;
 			}
 		});
 		overlayManager.add(yamaHornOverlay);
@@ -92,7 +92,7 @@ public class YamaHornHelperPlugin extends Plugin
 	public void onGameTick(GameTick event) {
 		listOfPlayers.clear();
 		
-		if (isHidden) {
+		if (noHornEquipped) {
 			return;
 		}
 		
@@ -122,7 +122,7 @@ public class YamaHornHelperPlugin extends Plugin
 			return;
 		}
 		Item weapon = event.getItemContainer().getItem(EquipmentInventorySlot.WEAPON.getSlotIdx());
-		isHidden = weapon == null || weapon.getId() != ItemID.SOULFLAME_HORN; //Hide interface when not equipping a horn
+		noHornEquipped = weapon == null || weapon.getId() != ItemID.SOULFLAME_HORN; //Hide interface when not equipping a horn
 	}
 	
 	@Subscribe
@@ -132,7 +132,7 @@ public class YamaHornHelperPlugin extends Plugin
 		 *  For example, horn set for 1 person but there's a second person around and you want to avoid potentially horning them by mistake
 		 */
 		
-		if (isHidden || !event.getMenuOption().startsWith("Use") || listOfPlayers.size() > 0) {
+		if (noHornEquipped || !event.getMenuOption().startsWith("Use") || listOfPlayers.size() > 0) {
 			return;
 		}
 		

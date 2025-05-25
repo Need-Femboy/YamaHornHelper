@@ -35,7 +35,7 @@ public class YamaHornOverlay extends OverlayPanel
 	
 	@Override
 	public Dimension render(Graphics2D graphics) {
-		if (plugin.isHidden()) {
+		if (plugin.isNoHornEquipped()) {
 			return null;
 		}
 		
