@@ -127,19 +127,18 @@ public class YamaHornHelperPlugin extends Plugin
 	
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event) {
-		/*
-		 * TODO: Config option to prevent the player from horning when there are too many people around.
-		 *  For example, horn set for 1 person but there's a second person around and you want to avoid potentially horning them by mistake
-		 */
-		
 		if (noHornEquipped || !event.getMenuOption().startsWith("Use") || listOfPlayers.size() > 0) {
 			return;
 		}
 		
-		if (event.getMenuOption().equals("Use <col=00ff00>Special Attack</col>") ||
-				event.getMenuTarget().equals("<col=ff9040>Special Attack</col>")) {
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "",
-					"<col=ef1020>You blow your horn into the wind. No-one nearby is able to listen.", null);
+		if (event.getMenuOption().equals("Use <col=00ff00>Special Attack</col>") || event.getMenuTarget().equals("<col=ff9040>Special Attack</col>"))
+		{
+			if (config.hardCapSpec() && listOfPlayers.size() > yamaPlayers) {
+				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "<col=ef1020>You blow your horn, but there are too many people nearby to hear it clearly.", null);
+			}
+			else {
+				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "<col=ef1020>You blow your horn into the wind. No-one nearby is able to listen.", null);
+			}
 			event.consume();
 		}
 	}
