@@ -136,11 +136,12 @@ public class YamaHornHelperPlugin extends Plugin
 		{
 			if (config.hardCapSpec() && listOfPlayers.size() > yamaPlayers) {
 				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "<col=ef1020>You blow your horn, but there are too many people nearby to hear it clearly.", null);
+				event.consume();
 			}
-			else if (listOfPlayers.size() > 0) {
+			else if (listOfPlayers.size() == 0) {
 				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "<col=ef1020>You blow your horn into the wind. No-one nearby is able to listen.", null);
+				event.consume();
 			}
-			event.consume();
 		}
 	}
 	
