@@ -32,8 +32,9 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @PluginDescriptor(
-		name = "Yama Horn Helper",
-		description = "Plugin to help horners"
+		name = "Soulflame Horn Helper",
+		description = "Plugin to help horners",
+		tags = {"pvm", "bossing"}
 )
 public class YamaHornHelperPlugin extends Plugin
 {
